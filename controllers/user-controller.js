@@ -48,26 +48,21 @@ export const signUp = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   const { email, password } = req.body;
-
+  let existingUser;
   try {
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
-
-    if (!existingUser) {
-      return res
-        .status(404)
-        .json({ message: "Couldn't Find User By This Email" });
-    }
-
-    const correctPassword = bcrypt.compareSync(password, existingUser.password);
-    if (!correctPassword) {
-      return res.status(400).json({ message: "Incorrect Password" });
-    }
-
-    return res
-      .status(200)
-      .json({ message: "Login successful", user: existingUser });
+    existingUser = await User.findOne({ email });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "An error occurred" });
+    return console.log(err);
   }
+  if (!existingUser) {
+    return res.status(404).json({ message: "Couldnt Find User By This Email" });
+  }
+
+  const isPasswordCorrect = bcrypt.compareSync(password, existingUser.password);
+  if (!isPasswordCorrect) {
+    return res.status(400).json({ message: "Incorrect Password" });
+  }
+  return res
+    .status(200)
+    .json({ message: "Login Successfull", user: existingUser });
 };
